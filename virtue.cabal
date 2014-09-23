@@ -20,9 +20,8 @@ executable virtue
   main-is:             Main.hs
 
 Test-Suite spec
-  build-depends:       base >= 4.6 && < 4.7, hspec >= 1.11.0
+  build-depends:       base >= 4.6 && < 4.7, parsec >= 3.1.0, hspec >= 1.11.0, HUnit >= 1.2.0.0, QuickCheck >= 2.7.0
   default-language:    Haskell2010
-  ghc-options:         -Wall
   hs-source-dirs:      src, test
   main-is:             Spec.hs
   type:                exitcode-stdio-1.0
