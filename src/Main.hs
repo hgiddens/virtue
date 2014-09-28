@@ -1,18 +1,25 @@
-import Control.Applicative
+import Control.Arrow (left)
 import Control.Monad
 import Data.List
-import Parser (Stack, burlesque)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
 import Text.Parsec (parse)
 
-err :: Show s => s -> IO ()
-err s = hPutStrLn stderr (show s) >> exitFailure
+import Interp (interp)
+import Parser (Stack, burlesque)
+
+err :: String -> IO ()
+err s = hPutStrLn stderr ("error: " ++ s) >> exitFailure
 
 out :: Stack -> IO ()
 out = putStrLn . join . intersperse " " . map show
 
+eval :: String -> Either String Stack
+eval input = do
+  stack <- left show $ parse burlesque "<stdin>" input
+  interp stack
+
 main :: IO ()
 main = do
-  program <- parse burlesque "<stdin>" <$> getContents
-  either err out program
+  input <- getContents
+  either err out $ eval input
