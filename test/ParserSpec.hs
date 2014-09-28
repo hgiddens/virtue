@@ -16,25 +16,16 @@ shouldBeAnyLeft :: Either a b -> Expectation
 shouldBeAnyLeft (Left _) = return ()
 shouldBeAnyLeft _ = assertFailure "not left"
 
-data TToken = TInt Int
-
-instance Show TToken where
-    show (TInt i) = show i
-
-instance Arbitrary TToken where
-    arbitrary = TInt <$> arbitrary
+instance Arbitrary Token where
+    arbitrary = BInt <$> arbitrary
     shrink _ = []
 
-expected :: [TToken] -> [Int]
-expected = map f
-    where f (TInt i) = i
-
-input :: [TToken] -> String
+input :: [Token] -> String
 input = foldr (++) "" . intersperse " " . map show
 
 spec = do
   describe "burlesque" $ do
     it "can parse tokens" $ property $
-       \l -> runP burlesque () "" (input l) `shouldBeRight` expected l
+       \l -> runP burlesque () "" (input l) `shouldBeRight` l
     it "fails to parse with trailing junk" $ property $
        \l -> shouldBeAnyLeft $ runP burlesque () "" (input l ++ ".")
