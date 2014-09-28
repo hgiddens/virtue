@@ -5,7 +5,7 @@ import Data.List (intersperse)
 import Parser
 import Test.Hspec
 import Test.HUnit (assertFailure)
-import Test.QuickCheck (Arbitrary, Gen, arbitrary, property, shrink)
+import Test.QuickCheck (Arbitrary, Gen, arbitrary, oneof, property, shrink)
 import Text.Parsec.Prim (runP)
 
 shouldBeRight :: (Eq b, Show b) => Either a b -> b -> Expectation
@@ -17,7 +17,7 @@ shouldBeAnyLeft (Left _) = return ()
 shouldBeAnyLeft _ = assertFailure "not left"
 
 instance Arbitrary Token where
-    arbitrary = BInt <$> arbitrary
+    arbitrary = oneof [BInt <$> arbitrary, return BAdd]
     shrink _ = []
 
 input :: [Token] -> String
