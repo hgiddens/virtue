@@ -10,6 +10,7 @@ import Text.Printf (printf)
 data Token = BInt Int
            | BAdd
            | BFloat Double
+           | BString String
              deriving Eq
 
 
@@ -17,6 +18,7 @@ instance Show Token where
     show (BInt i) = show i
     show BAdd = ".+"
     show (BFloat d) = printf "%f" d
+    show (BString s) = show s
 
 (>|) :: Functor f => f a -> b -> f b
 fa >| b = fmap (const b) fa
@@ -35,6 +37,9 @@ num = comb <$> prefix <*> suffix
 add :: Stream s m Char => ParsecT s u m Token
 add = string ".+" >| BAdd
 
+str :: Stream s m Char => ParsecT s u m Token
+str = BString <$> between (char '"') (char '"') (many $ noneOf "\"")
+
 sp :: Stream s m Char => ParsecT s u m ()
 sp = void $ char ' '
 
@@ -42,4 +47,4 @@ type Stack = [Token]
 
 burlesque :: Stream s m Char => ParsecT s u m Stack
 burlesque = (tok `sepBy` sp) <* eof
-    where tok = choice [num, add]
+    where tok = choice [num, add, str]
