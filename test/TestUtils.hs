@@ -8,12 +8,14 @@ import Test.QuickCheck (Arbitrary, arbitrary, oneof, shrink)
 import Parser
 
 instance Arbitrary Token where
-    arbitrary = oneof [BInt <$> arbitrary, return BAdd]
+    arbitrary = oneof [BInt <$> arbitrary,
+                       return BAdd,
+                       BFloat <$> arbitrary]
     shrink _ = []
 
-shouldBeRight :: (Eq b, Show b) => Either a b -> b -> Expectation
+shouldBeRight :: (Eq b, Show a, Show b) => Either a b -> b -> Expectation
 shouldBeRight (Right a) e = a `shouldBe` e
-shouldBeRight _ _ = assertFailure "not right"
+shouldBeRight (Left l) _ = assertFailure $ "not right : Left " ++ (show l)
 
 shouldBeAnyLeft :: Either a b -> Expectation
 shouldBeAnyLeft (Left _) = return ()

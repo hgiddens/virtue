@@ -2,6 +2,7 @@ module Interp (interp) where
 
 import Control.Arrow (left)
 import Parser (Stack, Token(..))
+import Text.Printf (printf)
 
 interp :: Stack -> Either String Stack
 interp [] = Right []
@@ -18,4 +19,5 @@ add stack = left (".+: " ++) $ do
   (b:t') <- interp' t
   case (a,b) of
     ((BInt x), (BInt y)) -> Right $ BInt (x+y) : t'
-    _ -> undefined -- unpossible
+    ((BFloat x), (BFloat y)) -> Right $ BFloat (x+y) : t'
+    (x, y) -> Left $ printf "invalid operands: %s %s" (show y) (show x)

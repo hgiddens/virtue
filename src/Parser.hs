@@ -2,24 +2,35 @@
 
 module Parser (Stack, Token(..), burlesque) where
 
-import Control.Applicative hiding ((<|>))
+import Control.Applicative hiding ((<|>), many)
 import Control.Monad
 import Text.Parsec
+import Text.Printf (printf)
 
 data Token = BInt Int
            | BAdd
+           | BFloat Double
              deriving Eq
 
 
 instance Show Token where
     show (BInt i) = show i
     show BAdd = ".+"
+    show (BFloat d) = printf "%f" d
 
 (>|) :: Functor f => f a -> b -> f b
 fa >| b = fmap (const b) fa
 
-integer :: Stream s m Char => ParsecT s u m Token
-integer = BInt <$> (option id (char '-' >| negate) <*> fmap read (many1 digit))
+(<++>) :: Applicative a => a [b] -> a [b] -> a [b]
+(<++>) = liftA2 (++)
+
+num :: Stream s m Char => ParsecT s u m Token
+num = comb <$> prefix <*> suffix
+    where
+      prefix = option "" (string "-") <++> many1 digit
+      suffix = optionMaybe $ string "." <++> many1 digit
+      comb i Nothing = BInt . read $ i
+      comb i (Just f) = BFloat . read $ i ++ f
 
 add :: Stream s m Char => ParsecT s u m Token
 add = string ".+" >| BAdd
@@ -31,4 +42,4 @@ type Stack = [Token]
 
 burlesque :: Stream s m Char => ParsecT s u m Stack
 burlesque = (tok `sepBy` sp) <* eof
-    where tok = integer <|> add
+    where tok = choice [num, add]

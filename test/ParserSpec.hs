@@ -17,4 +17,4 @@ spec = do
     it "can parse tokens" $ property $
        \l -> runP burlesque () "" (input l) `shouldBeRight` l
     it "fails to parse with trailing junk" $ property $
-       \l -> shouldBeAnyLeft $ runP burlesque () "" (input l ++ ".")
+       \l -> shouldBeAnyLeft $ runP burlesque () "" (input l ++ "X")
