@@ -10,7 +10,7 @@ import Text.Printf (printf)
 data Token = BInt Int
            | BAdd
            | BFloat Double
-           | BString String
+           | BString [Char]
              deriving Eq
 
 
@@ -18,7 +18,7 @@ instance Show Token where
     show (BInt i) = show i
     show BAdd = ".+"
     show (BFloat d) = printf "%f" d
-    show (BString s) = show s
+    show (BString s) = "\"" ++ s ++ "\""
 
 (>|) :: Functor f => f a -> b -> f b
 fa >| b = fmap (const b) fa

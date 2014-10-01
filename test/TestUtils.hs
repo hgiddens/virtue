@@ -11,11 +11,10 @@ instance Arbitrary Token where
     arbitrary = oneof [BInt <$> arbitrary,
                        return BAdd,
                        BFloat <$> arbitrary,
-                       BString <$> arbitrary `suchThat` noescape
+                       BString <$> arbitrary `suchThat` noquote
                       ]
-        -- TODO improve me! "foo\bar" should be valid
-        where noescape :: String -> Bool
-              noescape s = not $ any (=='\\') (show s)
+        where noquote :: String -> Bool
+              noquote s = not (any (=='"') s)
     shrink _ = []
 
 shouldBeRight :: (Eq b, Show a, Show b) => Either a b -> b -> Expectation
