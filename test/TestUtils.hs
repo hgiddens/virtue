@@ -11,6 +11,7 @@ instance Arbitrary Token where
     arbitrary = oneof [BInt <$> arbitrary,
                        BFloat <$> arbitrary,
                        BString <$> arbitrary `suchThat` noquote,
+                       BChar <$> arbitrary,
                        return BAdd,
                        return BReverse
                       ]

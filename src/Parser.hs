@@ -10,6 +10,7 @@ import Text.Printf (printf)
 data Token = BInt Int
            | BFloat Double
            | BString [Char]
+           | BChar Char
            | BAdd
            | BReverse
              deriving Eq
@@ -19,6 +20,7 @@ instance Show Token where
     show (BInt i) = show i
     show (BFloat d) = printf "%f" d
     show (BString s) = "\"" ++ s ++ "\""
+    show (BChar c) = '\'':c:[]
     show BAdd = ".+"
     show BReverse = "<-"
 
@@ -39,6 +41,9 @@ num = comb <$> prefix <*> suffix
 str :: Stream s m Char => ParsecT s u m Token
 str = BString <$> between (char '"') (char '"') (many $ noneOf "\"")
 
+chr :: Stream s m Char => ParsecT s u m Token
+chr = BChar <$> (char '\'' >> anyChar)
+
 add :: Stream s m Char => ParsecT s u m Token
 add = string ".+" >| BAdd
 
@@ -52,4 +57,4 @@ type Stack = [Token]
 
 burlesque :: Stream s m Char => ParsecT s u m Stack
 burlesque = (tok `sepBy` sp) <* eof
-    where tok = choice [num, str, add, rev]
+    where tok = choice [num, str, chr, add, rev]
