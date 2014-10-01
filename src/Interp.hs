@@ -11,6 +11,7 @@ interp stack = fmap reverse . interp' . reverse $ stack
 interp' :: Stack -> Either String Stack
 interp' [] = Left "empty stack"
 interp' (BAdd:rest) = add rest
+interp' (BReverse:rest) = rev rest
 interp' x = Right x
 
 add :: Stack -> Either String Stack
@@ -21,3 +22,10 @@ add stack = left (".+: " ++) $ do
     ((BInt x), (BInt y)) -> Right $ BInt (x+y) : t'
     ((BFloat x), (BFloat y)) -> Right $ BFloat (x+y) : t'
     (x, y) -> Left $ printf "invalid operands: %s %s" (show y) (show x)
+
+rev :: Stack -> Either String Stack
+rev stack = left ("<-: " ++) $ do
+  (h:t) <- interp' stack
+  case h of
+    BString s -> return $ BString (reverse s) : t
+    x -> Left $ printf "invalid operand: %s" (show x)

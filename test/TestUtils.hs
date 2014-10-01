@@ -9,9 +9,10 @@ import Parser
 
 instance Arbitrary Token where
     arbitrary = oneof [BInt <$> arbitrary,
-                       return BAdd,
                        BFloat <$> arbitrary,
-                       BString <$> arbitrary `suchThat` noquote
+                       BString <$> arbitrary `suchThat` noquote,
+                       return BAdd,
+                       return BReverse
                       ]
         where noquote :: String -> Bool
               noquote s = not (any (=='"') s)

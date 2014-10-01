@@ -8,17 +8,19 @@ import Text.Parsec
 import Text.Printf (printf)
 
 data Token = BInt Int
-           | BAdd
            | BFloat Double
            | BString [Char]
+           | BAdd
+           | BReverse
              deriving Eq
 
 
 instance Show Token where
     show (BInt i) = show i
-    show BAdd = ".+"
     show (BFloat d) = printf "%f" d
     show (BString s) = "\"" ++ s ++ "\""
+    show BAdd = ".+"
+    show BReverse = "<-"
 
 (>|) :: Functor f => f a -> b -> f b
 fa >| b = fmap (const b) fa
@@ -34,11 +36,14 @@ num = comb <$> prefix <*> suffix
       comb i Nothing = BInt . read $ i
       comb i (Just f) = BFloat . read $ i ++ f
 
+str :: Stream s m Char => ParsecT s u m Token
+str = BString <$> between (char '"') (char '"') (many $ noneOf "\"")
+
 add :: Stream s m Char => ParsecT s u m Token
 add = string ".+" >| BAdd
 
-str :: Stream s m Char => ParsecT s u m Token
-str = BString <$> between (char '"') (char '"') (many $ noneOf "\"")
+rev :: Stream s m Char => ParsecT s u m Token
+rev = string "<-" >| BReverse
 
 sp :: Stream s m Char => ParsecT s u m ()
 sp = void $ char ' '
@@ -47,4 +52,4 @@ type Stack = [Token]
 
 burlesque :: Stream s m Char => ParsecT s u m Stack
 burlesque = (tok `sepBy` sp) <* eof
-    where tok = choice [num, add, str]
+    where tok = choice [num, str, add, rev]
