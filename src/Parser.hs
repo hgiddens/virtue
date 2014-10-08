@@ -13,6 +13,7 @@ data Token = BInt Int
            | BChar Char
            | BAdd
            | BReverse
+           | BBlockAccess
              deriving Eq
 
 
@@ -23,9 +24,7 @@ instance Show Token where
     show (BChar c) = '\'':c:[]
     show BAdd = ".+"
     show BReverse = "<-"
-
-(>|) :: Functor f => f a -> b -> f b
-fa >| b = fmap (const b) fa
+    show BBlockAccess = "!!"
 
 (<++>) :: Applicative a => a [b] -> a [b] -> a [b]
 (<++>) = liftA2 (++)
@@ -45,10 +44,13 @@ chr :: Stream s m Char => ParsecT s u m Token
 chr = BChar <$> (char '\'' >> anyChar)
 
 add :: Stream s m Char => ParsecT s u m Token
-add = string ".+" >| BAdd
+add = BAdd <$ string ".+"
 
 rev :: Stream s m Char => ParsecT s u m Token
-rev = string "<-" >| BReverse
+rev = BReverse <$ string "<-"
+
+blockAccess :: Stream s m Char => ParsecT s u m Token
+blockAccess = BBlockAccess <$ string "!!"
 
 sp :: Stream s m Char => ParsecT s u m ()
 sp = void $ char ' '
@@ -57,4 +59,4 @@ type Stack = [Token]
 
 burlesque :: Stream s m Char => ParsecT s u m Stack
 burlesque = (tok `sepBy` sp) <* eof
-    where tok = choice [num, str, chr, add, rev]
+    where tok = choice [num, str, chr, add, rev, blockAccess]

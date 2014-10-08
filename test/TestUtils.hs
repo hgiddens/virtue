@@ -13,8 +13,8 @@ instance Arbitrary Token where
                        BString <$> arbitrary `suchThat` noquote,
                        BChar <$> arbitrary,
                        return BAdd,
-                       return BReverse
-                      ]
+                       return BReverse,
+                       return BBlockAccess]
         where noquote :: String -> Bool
               noquote s = not (any (=='"') s)
     shrink _ = []
