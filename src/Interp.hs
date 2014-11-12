@@ -22,6 +22,7 @@ add stack = left (".+: " ++) $ do
   case (a,b) of
     ((BInt x), (BInt y)) -> Right $ BInt (x+y) : t'
     ((BFloat x), (BFloat y)) -> Right $ BFloat (x+y) : t'
+    ((BString x), (BString y)) -> Right $ BString (y++x) : t'
     (x, y) -> Left $ printf "invalid operands: %s %s" (show y) (show x)
 
 rev :: Stack -> Either String Stack

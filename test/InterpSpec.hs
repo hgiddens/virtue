@@ -25,6 +25,9 @@ spec = do
       it "should evaluate addition of two floats" $ property $
         \(x :: Double, y :: Double) ->
             interp [BFloat x, BFloat y, BAdd] `shouldBe` Right [BFloat (x+y)]
+      it "should evaluate addition of two strings" $ property $
+        \(x :: String, y :: String) ->
+            interp [BString x, BString y, BAdd] `shouldBe` Right [BString (x++y)]
       it "should evaluate recursively" $ property $
         \(x :: Int, y :: Int, z :: Int) ->
             interp [BInt x, BInt y, BInt z, BAdd, BAdd] `shouldBe` Right [BInt (x+y+z)]
