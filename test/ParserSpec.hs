@@ -15,6 +15,6 @@ input = foldr (++) "" . intersperse " " . map show
 spec = do
   describe "burlesque" $ do
     it "can parse tokens" $ property $
-       \l -> runP burlesque () "" (input l) `shouldBeRight` l
+       \l -> runP burlesque () "" (input l) `shouldBeRight` (reverse l)
     it "fails to parse with trailing junk" $ property $
        \l -> shouldBeAnyLeft $ runP burlesque () "" (input l ++ "X")

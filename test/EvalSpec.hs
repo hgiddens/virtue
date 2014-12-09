@@ -27,3 +27,5 @@ spec = do
          "{1 2 3}<-" `evaluatesTo` "{3 2 1}"
          "\"Hello\"XX" `evaluatesTo` "{'H 'e 'l 'l 'o}"
          "{{ 1 2}{3}}L[" `evaluatesTo` "2"
+  describe "lesson two" $ do
+         "1 2 3" `evaluatesTo` "3\n2\n1"

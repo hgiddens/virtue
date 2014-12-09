@@ -12,7 +12,7 @@ err :: String -> String
 err = (++) "error: "
 
 out :: Stack -> String
-out = join . intersperse " " . map show
+out = join . intersperse "\n" . map show
 
 bimap :: (a -> a') -> (b -> b') -> Either a b -> Either a' b'
 bimap f _ (Left a) = Left (f a)

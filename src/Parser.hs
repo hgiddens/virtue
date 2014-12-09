@@ -80,4 +80,4 @@ toks = tok `sepBy` sp
     where tok = choice [num, str, chr, add, rev, blockAccess, block, explode, len]
 
 burlesque :: Stream s m Char => ParsecT s u m Stack
-burlesque = toks <* eof
+burlesque = reverse <$> toks <* eof
