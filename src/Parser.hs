@@ -4,6 +4,8 @@ module Parser (Stack, Token(..), burlesque) where
 
 import Control.Applicative hiding ((<|>), many)
 import Control.Monad
+import Data.List (intersperse)
+import Data.Monoid (mconcat)
 import Text.Parsec
 import Text.Printf (printf)
 
@@ -13,6 +15,7 @@ data Token = BInt Int
            | BChar Char
            | BAdd
            | BReverse
+           | BBlock [Token]
            | BBlockAccess
              deriving Eq
 
@@ -25,6 +28,7 @@ instance Show Token where
     show BAdd = ".+"
     show BReverse = "<-"
     show BBlockAccess = "!!"
+    show (BBlock ts) = "{" ++ (mconcat $ intersperse " " $ map show ts) ++ "}"
 
 (<++>) :: Applicative a => a [b] -> a [b] -> a [b]
 (<++>) = liftA2 (++)
@@ -52,11 +56,17 @@ rev = BReverse <$ string "<-"
 blockAccess :: Stream s m Char => ParsecT s u m Token
 blockAccess = BBlockAccess <$ string "!!"
 
+block :: Stream s m Char => ParsecT s u m Token
+block = fmap BBlock $ between (char '{') (char '}') toks
+
 sp :: Stream s m Char => ParsecT s u m ()
 sp = void $ char ' '
 
 type Stack = [Token]
 
+toks :: Stream s m Char => ParsecT s u m [Token]
+toks = tok `sepBy` (option () sp)
+    where tok = choice [num, str, chr, add, rev, blockAccess, block]
+
 burlesque :: Stream s m Char => ParsecT s u m Stack
-burlesque = (tok `sepBy` (option () sp)) <* eof
-    where tok = choice [num, str, chr, add, rev, blockAccess]
+burlesque = toks <* eof

@@ -23,3 +23,4 @@ spec = do
          "'c" `evaluatesTo` "'c"
          "\"Hi\"0!!" `evaluatesTo` "'H"
          "\"Hi\"1!!" `evaluatesTo` "'i"
+         "{1 2 3}" `evaluatesTo` "{1 2 3}"
