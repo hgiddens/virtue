@@ -58,5 +58,5 @@ sp = void $ char ' '
 type Stack = [Token]
 
 burlesque :: Stream s m Char => ParsecT s u m Stack
-burlesque = (tok `sepBy` sp) <* eof
+burlesque = (tok `sepBy` (option () sp)) <* eof
     where tok = choice [num, str, chr, add, rev, blockAccess]
