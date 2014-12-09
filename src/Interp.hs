@@ -13,6 +13,7 @@ interp' [] = Left "empty stack"
 interp' (BAdd:rest) = add rest
 interp' (BReverse:rest) = rev rest
 interp' (BBlockAccess:rest) = blockAccess rest
+interp' (BExplode:rest) = explode rest
 interp' x = Right x
 
 add :: Stack -> Either String Stack
@@ -43,3 +44,10 @@ blockAccess stack = left ("!!: " ++) $ do
           | ix' < 0 || ix' >= length str' = Left $ printf "invalid index: %s" (show ix')
           | otherwise = Right $ BChar (str' !! ix') : t'
       go ix str _ = Left $ printf "invalid operands: %s %s" (show str) (show ix)
+
+explode :: Stack -> Either String Stack
+explode stack = left ("XX: " ++) $ do
+  (h:t) <- interp' stack
+  case h of
+    BString s -> return $ BBlock (fmap BChar s) : t
+    x -> Left $ printf "invalid operand: %s" (show x)

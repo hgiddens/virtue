@@ -18,7 +18,8 @@ instance Arbitrary Token where
                         BChar <$> arbitrary,
                         return BAdd,
                         return BReverse,
-                        return BBlockAccess]
+                        return BBlockAccess,
+                        return BExplode]
 
               gen 0 = oneof $ (BBlock <$> return []) : leaves
               gen n = oneof $ (BBlock <$> listOf (gen (n `div` 10))) : leaves

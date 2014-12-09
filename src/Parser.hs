@@ -17,6 +17,7 @@ data Token = BInt Int
            | BReverse
            | BBlock [Token]
            | BBlockAccess
+           | BExplode
              deriving Eq
 
 
@@ -28,6 +29,7 @@ instance Show Token where
     show BAdd = ".+"
     show BReverse = "<-"
     show BBlockAccess = "!!"
+    show BExplode = "XX"
     show (BBlock ts) = "{" ++ (mconcat $ intersperse " " $ map show ts) ++ "}"
 
 (<++>) :: Applicative a => a [b] -> a [b] -> a [b]
@@ -59,6 +61,9 @@ blockAccess = BBlockAccess <$ string "!!"
 block :: Stream s m Char => ParsecT s u m Token
 block = fmap BBlock $ between (char '{') (char '}') toks
 
+explode :: Stream s m Char => ParsecT s u m Token
+explode = BExplode <$ string "XX"
+
 sp :: Stream s m Char => ParsecT s u m ()
 sp = void $ char ' '
 
@@ -66,7 +71,7 @@ type Stack = [Token]
 
 toks :: Stream s m Char => ParsecT s u m [Token]
 toks = tok `sepBy` (option () sp)
-    where tok = choice [num, str, chr, add, rev, blockAccess, block]
+    where tok = choice [num, str, chr, add, rev, blockAccess, block, explode]
 
 burlesque :: Stream s m Char => ParsecT s u m Stack
 burlesque = toks <* eof

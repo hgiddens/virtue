@@ -75,3 +75,6 @@ spec = do
             return $ shouldBeAnyLeft $ interp [str, ix, BBlockAccess]
       it "should fail lacking sufficient arguments" $
          shouldBeAnyLeft $ interp [BBlockAccess]
+    describe "explode" $ do
+      it "should explode a string" $ property $
+         \s -> interp [BString s, BExplode] `shouldBe` Right [BBlock (fmap BChar s)]

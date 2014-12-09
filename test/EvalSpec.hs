@@ -25,3 +25,4 @@ spec = do
          "\"Hi\"1!!" `evaluatesTo` "'i"
          "{1 2 3}" `evaluatesTo` "{1 2 3}"
          "{1 2 3}<-" `evaluatesTo` "{3 2 1}"
+         "\"Hello\"XX" `evaluatesTo` "{'H 'e 'l 'l 'o}"
