@@ -34,6 +34,8 @@ spec = do
       it "should evaluate addition of two strings" $ property $
         \(x :: String, y :: String) ->
             interp [BAdd, BString x, BString y] `shouldBe` Right [BString (y++x)]
+      it "should evaluate concatenation of two blocks" $ property $
+        \x y -> interp [BAdd, BBlock x, BBlock y] `shouldBe` Right [BBlock (y++x)]
       it "should evaluate recursively" $ property $
         \(x :: Int, y :: Int, z :: Int) ->
             interp [BAdd, BAdd, BInt x, BInt y, BInt z] `shouldBe` Right [BInt (x+y+z)]
