@@ -36,16 +36,21 @@ spec = do
       it "should fail presented mixed operands" $
         shouldBeAnyLeft $ interp [BFloat 1.0, BInt 1, BAdd]
     describe "reversing" $ do
-      it "should reverse a string" $ property $
-         \s -> interp [BString s, BReverse] `shouldBe` Right [BString (reverse s)]
-      it "should be the identity function applied twice" $ property $
-         \s -> interp [BString s, BReverse, BReverse] `shouldBe` Right [BString s]
+      describe "on strings" $ do
+        it "should reverse a string" $ property $
+           \s -> interp [BString s, BReverse] `shouldBe` Right [BString (reverse s)]
+        it "should be the identity function applied twice" $ property $
+           \s -> interp [BString s, BReverse, BReverse] `shouldBe` Right [BString s]
+      describe "on blocks" $ do
+        it "should reverse a block" $ property $
+           \ts -> interp [BBlock ts, BReverse] `shouldBe` Right [BBlock (reverse ts)]
       it "should fail lacking an operand" $
          shouldBeAnyLeft $ interp [BReverse]
       it "should fail given a non-string operand" $ property $
-         let notString (BString _) = False
-             notString _ = True
-         in (arbitrary `suchThat` notString) `ffmap` \token ->
+         let notReversable (BString _) = False
+             notReversable (BBlock _) = False
+             notReversable _ = True
+         in (arbitrary `suchThat` notReversable) `ffmap` \token ->
              shouldBeAnyLeft $ interp [token, BReverse]
     describe "block access" $ do
       it "should index a string successfully" $ property $

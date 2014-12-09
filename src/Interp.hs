@@ -30,6 +30,7 @@ rev stack = left ("<-: " ++) $ do
   (h:t) <- interp' stack
   case h of
     BString s -> return $ BString (reverse s) : t
+    BBlock ts -> return $ BBlock (reverse ts) : t
     x -> Left $ printf "invalid operand: %s" (show x)
 
 blockAccess :: Stack -> Either String Stack
