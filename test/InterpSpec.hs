@@ -78,3 +78,6 @@ spec = do
     describe "explode" $ do
       it "should explode a string" $ property $
          \s -> interp [BString s, BExplode] `shouldBe` Right [BBlock (fmap BChar s)]
+    describe "length" $ do
+      it "should describe the length of a block" $ property $
+         \b -> interp [BBlock b, BLength] `shouldBe` Right [BInt (length b)]

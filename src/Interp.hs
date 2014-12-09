@@ -14,6 +14,7 @@ interp' (BAdd:rest) = add rest
 interp' (BReverse:rest) = rev rest
 interp' (BBlockAccess:rest) = blockAccess rest
 interp' (BExplode:rest) = explode rest
+interp' (BLength:rest) = len rest
 interp' x = Right x
 
 add :: Stack -> Either String Stack
@@ -50,4 +51,12 @@ explode stack = left ("XX: " ++) $ do
   (h:t) <- interp' stack
   case h of
     BString s -> return $ BBlock (fmap BChar s) : t
+    x -> Left $ printf "invalid operand: %s" (show x)
+
+
+len :: Stack -> Either String Stack
+len stack = left ("L[: " ++) $ do
+  (h:t) <- interp' stack
+  case h of
+    BBlock b -> return $ BInt (length b) : t
     x -> Left $ printf "invalid operand: %s" (show x)

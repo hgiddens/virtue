@@ -3,7 +3,6 @@
 module Parser (Stack, Token(..), burlesque) where
 
 import Control.Applicative hiding ((<|>), many)
-import Control.Monad
 import Data.List (intersperse)
 import Data.Monoid (mconcat)
 import Text.Parsec
@@ -18,6 +17,7 @@ data Token = BInt Int
            | BBlock [Token]
            | BBlockAccess
            | BExplode
+           | BLength
              deriving Eq
 
 
@@ -30,6 +30,7 @@ instance Show Token where
     show BReverse = "<-"
     show BBlockAccess = "!!"
     show BExplode = "XX"
+    show BLength = "L["
     show (BBlock ts) = "{" ++ (mconcat $ intersperse " " $ map show ts) ++ "}"
 
 (<++>) :: Applicative a => a [b] -> a [b] -> a [b]
@@ -47,7 +48,7 @@ str :: Stream s m Char => ParsecT s u m Token
 str = BString <$> between (char '"') (char '"') (many $ noneOf "\"")
 
 chr :: Stream s m Char => ParsecT s u m Token
-chr = BChar <$> (char '\'' >> anyChar)
+chr = BChar <$> (char '\'' *> anyChar)
 
 add :: Stream s m Char => ParsecT s u m Token
 add = BAdd <$ string ".+"
@@ -59,19 +60,24 @@ blockAccess :: Stream s m Char => ParsecT s u m Token
 blockAccess = BBlockAccess <$ string "!!"
 
 block :: Stream s m Char => ParsecT s u m Token
-block = fmap BBlock $ between (char '{') (char '}') toks
+block = fmap BBlock $ between prefix suffix toks
+    where prefix = char '{' *> sp
+          suffix = sp <* char '}' 
 
 explode :: Stream s m Char => ParsecT s u m Token
 explode = BExplode <$ string "XX"
 
+len :: Stream s m Char => ParsecT s u m Token
+len = BLength <$ string "L["
+
 sp :: Stream s m Char => ParsecT s u m ()
-sp = void $ char ' '
+sp = skipMany $ char ' '
 
 type Stack = [Token]
 
 toks :: Stream s m Char => ParsecT s u m [Token]
-toks = tok `sepBy` (option () sp)
-    where tok = choice [num, str, chr, add, rev, blockAccess, block, explode]
+toks = tok `sepBy` sp
+    where tok = choice [num, str, chr, add, rev, blockAccess, block, explode, len]
 
 burlesque :: Stream s m Char => ParsecT s u m Stack
 burlesque = toks <* eof
