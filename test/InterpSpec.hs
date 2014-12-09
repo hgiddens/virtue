@@ -107,3 +107,15 @@ spec = do
          do a <- arbitrary `suchThat` (not . commandp)
             t <- arbitrary
             return $ interp (BDup:a:t) `shouldBe` Right (a:a:t)
+    describe "append" $ do
+      it "should append values to blocks" $ property $
+         do a <- arbitrary `suchThat` (not . commandp)
+            bs <- listOf $ arbitrary `suchThat` (not . commandp)
+            t <- arbitrary
+            return $ interp (BAppend:a:(BBlock bs):t) `shouldBe` Right ((BBlock $ bs ++ [a]):t)
+    describe "prepend" $ do
+      it "should prepend values to blocks" $ property $
+         do a <- arbitrary `suchThat` (not . commandp)
+            bs <- listOf $ arbitrary `suchThat` (not . commandp)
+            t <- arbitrary
+            return $ interp (BPrepend:a:(BBlock bs):t) `shouldBe` Right ((BBlock $ a:bs):t)

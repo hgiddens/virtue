@@ -14,6 +14,8 @@ interp (BLength:rest) = len rest
 interp (BSwap:rest) = swap rest
 interp (BDrop:rest) = drp rest
 interp (BDup:rest) = dup rest
+interp (BAppend:rest) = append rest
+interp (BPrepend:rest) = prepend rest
 interp x = Right x
 
 getarg :: Stack -> Either String (Token, Stack)
@@ -82,3 +84,19 @@ dup :: Stack -> Either String Stack
 dup stack = left ("vv: " ++) $ do
   (a,t) <- getarg stack
   return $ a:a:t
+
+append :: Stack -> Either String Stack
+append stack = left ("[+: " ++) $ do
+  (a,t) <- getarg stack
+  (b,t') <- getarg t
+  case b of
+    BBlock ts -> return $ BBlock (ts ++ [a]) : t'
+    x -> Left $ printf "invalid operand: %s" (show x)
+
+prepend :: Stack -> Either String Stack
+prepend stack = left ("+]: " ++) $ do
+  (a,t) <- getarg stack
+  (b,t') <- getarg t
+  case b of
+    BBlock ts -> return $ BBlock (a:ts) : t'
+    x -> Left $ printf "invalid operand: %s" (show x)

@@ -38,3 +38,5 @@ spec = do
          -- NYI "100ro{3.%}f[" `evaluatesTo` ("{" ++ mconcat (intersperse " " [show i | i <- [0..100], i `mod` 3 /= 0]) ++ "}")
   describe "lesson three" $ do
          "{1 2 3}{4 5 6}.+" `evaluatesTo` "{1 2 3 4 5 6}"
+         "{1 2 3}4+]" `evaluatesTo` "{4 1 2 3}"
+         "{1 2 3}4[+" `evaluatesTo` "{1 2 3 4}"
