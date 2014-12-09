@@ -1,5 +1,7 @@
 module EvalSpec (spec) where
 
+import Data.Monoid (mconcat)
+import Data.List (intersperse)
 import Test.Hspec
 import Text.Parsec (parse)
 import Text.Printf (printf)
@@ -8,10 +10,11 @@ import qualified Eval
 
 eval = Eval.eval "<test>"
 
-evaluatesTo i o = it (printf "%s ⇒ %s" i o) $
+evaluatesTo i o = it (printf "%s ⇒ %s" i (nl2comma o)) $
                      eval i `shouldBe` Right o
-                    
-    
+    where nl2comma ('\n':t) = ',':(nl2comma t)
+          nl2comma (h:t) = h:(nl2comma t)
+          nl2comma [] = []
 
 spec = do
   describe "lesson one" $ do
@@ -30,3 +33,6 @@ spec = do
   describe "lesson two" $ do
          "1 2 3" `evaluatesTo` "3\n2\n1"
          "1 2 3\\/" `evaluatesTo` "2\n3\n1"
+         "1 2 3vv" `evaluatesTo` "2\n1"
+         "1 2 3^^" `evaluatesTo` "3\n3\n2\n1"
+         -- NYI "100ro{3.%}f[" `evaluatesTo` ("{" ++ mconcat (intersperse " " [show i | i <- [0..100], i `mod` 3 /= 0]) ++ "}")

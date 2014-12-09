@@ -12,6 +12,12 @@ import TestUtils
 ffmap :: Functor f => f a -> (a -> b) -> f b
 ffmap = flip fmap
 
+commandp (BInt _) = False
+commandp (BFloat _) = False
+commandp (BString _) = False
+commandp (BChar _) = False
+commandp _ = True
+
 spec = do
   describe "interpreter" $ do
     it "should evaluate an empty stack as an error" $
@@ -83,12 +89,19 @@ spec = do
          \b -> interp [BLength, BBlock b] `shouldBe` Right [BInt (length b)]
     describe "swap" $ do
       it "should swap the two items on the top of the stack" $ property $
-         let nonCommand (BInt _) = True
-             nonCommand (BFloat _) = True
-             nonCommand (BString _) = True
-             nonCommand (BChar _) = True
-             nonCommand _ = False
-         in do a <- arbitrary `suchThat` nonCommand
-               b <- arbitrary `suchThat` nonCommand
-               t <- arbitrary
-               return $ interp (BSwap:a:b:t) `shouldBe` Right (b:a:t)
+         do a <- arbitrary `suchThat` (not . commandp)
+            b <- arbitrary `suchThat` (not . commandp)
+            t <- arbitrary
+            return $ interp (BSwap:a:b:t) `shouldBe` Right (b:a:t)
+      it "should accomodate commands" $
+         interp [BSwap, BAdd, BInt 1, BInt 2, BInt 4] `shouldBe` Right [BInt 4, BInt 3]
+    describe "drop" $ do
+      it "should drop the top item on the stack" $ property $
+         do a <- arbitrary `suchThat` (not . commandp)
+            t <- arbitrary
+            return $ interp (BDrop:a:t) `shouldBe` Right t
+    describe "dup" $ do
+      it "should dup the top item on the stack" $ property $
+         do a <- arbitrary `suchThat` (not . commandp)
+            t <- arbitrary
+            return $ interp (BDup:a:t) `shouldBe` Right (a:a:t)
