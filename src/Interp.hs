@@ -25,16 +25,24 @@ getarg stack = do
     (h:t) -> Right (h,t)
     _ -> Left "empty stack"
 
-add :: Stack -> Either String Stack
-add stack = left (".+: " ++) $ do
+getarg2 :: Stack -> Either String (Token, Token, Stack)
+getarg2 stack = do
   (a,t) <- getarg stack
   (b,t') <- getarg t
+  return $ (a,b,t')
+
+invalid a = Left $ printf "invalid operand %s" (show a)
+invalid2 a b = Left $ printf "invalid operands %s %s" (show a) (show b)
+
+add :: Stack -> Either String Stack
+add stack = left (".+: " ++) $ do
+  (a,b,t) <- getarg2 stack
   case (a,b) of
-    ((BInt x), (BInt y)) -> Right $ BInt (x+y) : t'
-    ((BFloat x), (BFloat y)) -> Right $ BFloat (x+y) : t'
-    ((BString x), (BString y)) -> Right $ BString (y++x) : t'
-    ((BBlock x), (BBlock y)) -> Right $ BBlock (y++x) : t'
-    (x, y) -> Left $ printf "invalid operands: %s %s" (show y) (show x)
+    ((BInt x), (BInt y)) -> Right $ BInt (x+y) : t
+    ((BFloat x), (BFloat y)) -> Right $ BFloat (x+y) : t
+    ((BString x), (BString y)) -> Right $ BString (y++x) : t
+    ((BBlock x), (BBlock y)) -> Right $ BBlock (y++x) : t
+    (x, y) -> invalid2 y x
 
 rev :: Stack -> Either String Stack
 rev stack = left ("<-: " ++) $ do
@@ -42,38 +50,36 @@ rev stack = left ("<-: " ++) $ do
   case h of
     BString s -> return $ BString (reverse s) : t
     BBlock ts -> return $ BBlock (reverse ts) : t
-    x -> Left $ printf "invalid operand: %s" (show x)
+    x -> invalid x
 
 blockAccess :: Stack -> Either String Stack
 blockAccess stack = left ("!!: " ++) $ do
-  (ix,t) <- getarg stack
-  (str,t') <- getarg t
-  go ix str t'
+  (ix,str,t) <- getarg2 stack
+  go ix str t
     where
-      go (BInt ix') (BString str') t'
+      go (BInt ix') (BString str') t
           | ix' < 0 || ix' >= length str' = Left $ printf "invalid index: %s" (show ix')
-          | otherwise = Right $ BChar (str' !! ix') : t'
-      go ix str _ = Left $ printf "invalid operands: %s %s" (show str) (show ix)
+          | otherwise = Right $ BChar (str' !! ix') : t
+      go ix str _ = invalid2 str ix
 
 explode :: Stack -> Either String Stack
 explode stack = left ("XX: " ++) $ do
   (h,t) <- getarg stack
   case h of
     BString s -> return $ BBlock (fmap BChar s) : t
-    x -> Left $ printf "invalid operand: %s" (show x)
+    x -> invalid x
 
 len :: Stack -> Either String Stack
 len stack = left ("L[: " ++) $ do
   (h,t) <- getarg stack
   case h of
     BBlock b -> return $ BInt (length b) : t
-    x -> Left $ printf "invalid operand: %s" (show x)
+    x -> invalid x
 
 swap :: Stack -> Either String Stack
 swap stack = left ("\\/: " ++) $ do
-  (a,t) <- getarg stack
-  (b,t') <- getarg t
-  return $ b:a:t'
+  (a,b,t) <- getarg2 stack
+  return $ b:a:t
 
 drp :: Stack -> Either String Stack
 drp stack = left ("vv: " ++) $ do
@@ -87,16 +93,14 @@ dup stack = left ("vv: " ++) $ do
 
 append :: Stack -> Either String Stack
 append stack = left ("[+: " ++) $ do
-  (a,t) <- getarg stack
-  (b,t') <- getarg t
+  (a,b,t) <- getarg2 stack
   case b of
-    BBlock ts -> return $ BBlock (ts ++ [a]) : t'
-    x -> Left $ printf "invalid operand: %s" (show x)
+    BBlock ts -> return $ BBlock (ts ++ [a]) : t
+    x -> invalid x
 
 prepend :: Stack -> Either String Stack
 prepend stack = left ("+]: " ++) $ do
-  (a,t) <- getarg stack
-  (b,t') <- getarg t
+  (a,b,t) <- getarg2 stack
   case b of
-    BBlock ts -> return $ BBlock (a:ts) : t'
-    x -> Left $ printf "invalid operand: %s" (show x)
+    BBlock ts -> return $ BBlock (a:ts) : t
+    x -> invalid x
