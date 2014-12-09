@@ -81,3 +81,14 @@ spec = do
     describe "length" $ do
       it "should describe the length of a block" $ property $
          \b -> interp [BLength, BBlock b] `shouldBe` Right [BInt (length b)]
+    describe "swap" $ do
+      it "should swap the two items on the top of the stack" $ property $
+         let nonCommand (BInt _) = True
+             nonCommand (BFloat _) = True
+             nonCommand (BString _) = True
+             nonCommand (BChar _) = True
+             nonCommand _ = False
+         in do a <- arbitrary `suchThat` nonCommand
+               b <- arbitrary `suchThat` nonCommand
+               t <- arbitrary
+               return $ interp (BSwap:a:b:t) `shouldBe` Right (b:a:t)

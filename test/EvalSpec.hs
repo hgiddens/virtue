@@ -29,3 +29,4 @@ spec = do
          "{{ 1 2}{3}}L[" `evaluatesTo` "2"
   describe "lesson two" $ do
          "1 2 3" `evaluatesTo` "3\n2\n1"
+         "1 2 3\\/" `evaluatesTo` "2\n3\n1"
